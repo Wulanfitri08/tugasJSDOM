@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Mini Ecommerce</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script defer src="https://use.fontawesome.com/releases/v5.8.1/js/all.js" 
+    integrity="sha384-g5uSoOSBd7KkhAMlnQILrecXvzst9TdC09/VM+pjDTCM+1il8RHz5fKANTFFb+gQ" crossorigin="anonymous"></script>
+    <style>
+        .card:hover {
+            transform: scale(1.05);
+            transition: 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar navbar-light bg-succes">
+            <a class="navbar-brand">Mini Ecommerce</a>
+            <form class="form-inline" id="formItem">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search" id="keyword" aria-label="Search">
+                <button class="btn btn-success my-2 my-sm-0" type="submit" id="searchItem">Search</button>
+            </form>
+            <button class="btn btn-success position-relative" id="cart">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="badge badge-light position-absolute top-0 start-100 translate-middle" id="cartCount">0</span>
+            </button>
+        </nav>
+
+        <div class="row mt-3">
+            <div class="row col-md-12" id="listBarang"></div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="cartModal" tabindex="-1" role="dialog" aria-labelledby="cartModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cartModalLabel">Keranjang Belanja</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <ul id="cartList" class="list-group"></ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const items = [
+            ['001', 'Keyboard Logitek', 60000, 'Keyboard yang mantap untuk kantoran', 'https://media.gamestop.com/i/gamestop/11184014/Logitech-G413-TKL-SE-Wired-Mechanical-Gaming-Keyboard?fmt=auto'],
+            ['002', 'Keyboard MSI', 300000, 'Keyboard gaming MSI mekanik', 'https://www.falconcomputers.co.uk/media/product/88401/0/0/msi-vigor-gk20-membrane-rgb-gaming-keyboard.jpg'],
+            ['003', 'Mouse Genius', 50000, 'Mouse Genius biar lebih pinter','http://dobleclicknet.com/wp-content/uploads/2020/05/Sin-t%C3%ADtulo-2-4.png'],
+            ['004', 'Mouse Jerry', 30000, 'Mouse yang disukai kucing', 'https://pngimg.com/uploads/computer_mouse/computer_mouse_PNG7672.png']
+        ];
+
+        let cart = [];
+
+        function displayItems(itemsToDisplay) {
+            const listBarang = document.getElementById('listBarang');
+            listBarang.innerHTML = '';
+
+            itemsToDisplay.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'col-sm-6 col-lg-4 mt-3';
+                card.innerHTML = `
+                    <div class="card" style="width: 18rem;">
+                        <img src="${item[4]}" class="card-img-top" height="200px" alt="${item[1]}">
+                        <div class="card-body">
+                            <h5 class="card-title">${item[1]}</h5>
+                            <p class="card-text">${item[3]}</p>
+                            <p class="card-text">Rp ${item[2].toLocaleString()}</p>
+                            <button class="btn btn-success add-to-cart" data-id="${item[0]}">Tambahkan ke keranjang</button>
+                        </div>
+                    </div>`;
+                listBarang.appendChild(card);
+            });
+        }
+
+        function updateCartCount() {
+            document.getElementById('cartCount').textContent = cart.length;
+        }
+
+        document.getElementById('formItem').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const keyword = document.getElementById('keyword').value.toLowerCase();
+            const filteredItems = items.filter(item => item[1].toLowerCase().includes(keyword));
+            displayItems(filteredItems);
+        });
+
+        document.getElementById('listBarang').addEventListener('click', function (e) {
+            if (e.target.classList.contains('add-to-cart')) {
+                const itemId = e.target.getAttribute('data-id');
+                const item = items.find(item => item[0] === itemId);
+                if (item && !cart.includes(item)) {
+                    cart.push(item);
+                    updateCartCount();
+                }
+            }
+        });
+
+        document.getElementById('cart').addEventListener('click', function () {
+            const cartList = document.getElementById('cartList');
+            cartList.innerHTML = '';
+            if (cart.length === 0) {
+                cartList.innerHTML = '<li class="list-group-item">Keranjang kosong.</li>';
+            } else {
+                cart.forEach(item => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    listItem.innerHTML = `
+                        ${item[1]} - Rp ${item[2].toLocaleString()}
+                        <button class="btn btn-danger btn-sm remove-from-cart" data-id="${item[0]}">Hapus</button>
+                    `;
+                    cartList.appendChild(listItem);
+                });
+            }
+            $('#cartModal').modal('show');
+        });
+
+        document.getElementById('cartList').addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-from-cart')) {
+                const itemId = e.target.getAttribute('data-id');
+                cart = cart.filter(item => item[0] !== itemId);
+                updateCartCount();
+                document.getElementById('cart').click();
+            }
+        });
+
+        displayItems(items);
+    </script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+</body>
+</html>
